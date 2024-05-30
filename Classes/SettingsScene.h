@@ -22,37 +22,27 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#ifndef __GAME_SCENE_H__
-#define __GAME_SCENE_H__
+#ifndef __SETTINGS_SCENE_H__
+#define __SETTINGS_SCENE_H__
 
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 
-class GameScene : public cocos2d::Layer {
+class SettingsScene : public cocos2d::Layer {
 
 public:
 	virtual bool init();
 	static cocos2d::Scene* createScene();
-	CREATE_FUNC(GameScene);
-
-    void startGame();
-    cocos2d::Node* createBlock(int color, float size);
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
-    void findAdjacentBlocks(int x, int y, int color, std::vector<cocos2d::Vec2>& blocks, std::vector<std::vector<int>>& field_copy);
-    void removeBlocks(const std::vector<cocos2d::Vec2>& blocks);
-    void dropBlocks();
-    void restartCallback(cocos2d::Ref* pSender);
-    void openSettingsMenu(cocos2d::Ref* pSender);
+	CREATE_FUNC(SettingsScene);
 
 private:
-    int width = 16;
-    int height = 10;
-    const int colors = 3;
-    int blockSize = 48;
-    cocos2d::Node* fieldNode;
-    std::vector<std::vector<int>> field;
-    size_t total_score;
-    size_t best_score = 0;
+	//cocos2d::TextFieldTTF* widthInput;
+	//cocos2d::TextFieldTTF* heightInput;
+	cocos2d::ui::TextField* widthInput;
+	cocos2d::ui::TextField* heightInput;
+	void createInputs();
+	void onSave(cocos2d::Ref* sender);
+	void onExit(cocos2d::Ref* sender);
 };
 
-#endif // __GAME_SCENE_H__
+#endif // __SETTINGS_SCENE_H__

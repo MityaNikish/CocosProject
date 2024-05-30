@@ -22,7 +22,9 @@
  THE SOFTWARE.
  ****************************************************************************/
 
+
 #include "GameScene.h"
+#include "SettingsScene.h"
 
 USING_NS_CC;
 
@@ -59,16 +61,37 @@ bool GameScene::init()
     bestScoreLabel->setTag(2);
     this->addChild(bestScoreLabel);
 
-    auto restartItem = MenuItemLabel::create(Label::createWithTTF("Restart", "fonts/arial.ttf", 30), CC_CALLBACK_1(GameScene::menuStartCallback, this));
-    auto menu = Menu::create(restartItem, NULL);
-    menu->setPosition(visibleSize.width / 2, visibleSize.height - restartItem->getContentSize().height);
-    this->addChild(menu, 1);
+    auto restartItem = MenuItemLabel::create(Label::createWithTTF("Restart", "fonts/arial.ttf", 30), CC_CALLBACK_1(GameScene::restartCallback, this));
+    auto restartMenu = Menu::create(restartItem, NULL);
+    restartMenu->setPosition(visibleSize.width / 2, visibleSize.height - restartItem->getContentSize().height);
+    this->addChild(restartMenu);
+
+
+    auto settingItem = MenuItemImage::create("setting.png", "setting_pressed.png", CC_CALLBACK_1(GameScene::openSettingsMenu, this));
+    auto settingMenu = Menu::create(settingItem, NULL);
+    settingMenu->setPosition(Vec2(origin.x + visibleSize.width - settingItem->getContentSize().width / 2,
+        origin.y + visibleSize.height - settingItem->getContentSize().height / 2));
+    this->addChild(settingMenu);
+
+
+    UserDefault::getInstance()->setFloatForKey("textFieldWidth", 16);
+    UserDefault::getInstance()->setFloatForKey("textFieldHeight", 10);
+    UserDefault::getInstance()->flush();
+
 
     auto listener = EventListenerTouchOneByOne::create();
     listener->onTouchBegan = CC_CALLBACK_2(GameScene::onTouchBegan, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 
+    startGame();
+
     return true;
+}
+
+void GameScene::openSettingsMenu(cocos2d::Ref* pSender)
+{
+    auto settingsScene = SettingsScene::createScene();
+    Director::getInstance()->pushScene(settingsScene);
 }
 
 void GameScene::startGame()
@@ -77,6 +100,18 @@ void GameScene::startGame()
     {
         fieldNode->removeAllChildren();
     }
+
+    width = UserDefault::getInstance()->getIntegerForKey("textFieldWidth", 16);
+    if (width < 1 || width > 200)
+    {
+        width = 16;
+    }
+    height = UserDefault::getInstance()->getIntegerForKey("textFieldHeight", 10);
+    if (height < 1 || height > 200)
+    {
+        height = 16;
+    }
+
 
     total_score = 0;
     auto totalScoreLabel = dynamic_cast<Label*>(this->getChildByTag(1));
@@ -90,8 +125,9 @@ void GameScene::startGame()
     fieldNode = Node::create();
     fieldNode->setTag(0);
     fieldNode->setPosition(Vec2((visibleSize.width - blockSize * width) / 2 + origin.x, (visibleSize.height - blockSize * height) / 2 + origin.y));
-
     this->addChild(fieldNode);
+
+    field = std::vector<std::vector<int>>(width, std::vector<int>(height, 0));
 
     for (int x = 0; x < width; x++)
     {
@@ -171,7 +207,6 @@ void GameScene::findAdjacentBlocks(int x, int y, int color, std::vector<Vec2>& b
     findAdjacentBlocks(x - 1, y, color, blocks, field_copy);
     findAdjacentBlocks(x, y + 1, color, blocks, field_copy);
     findAdjacentBlocks(x, y - 1, color, blocks, field_copy);
-
 }
 
 void GameScene::removeBlocks(const std::vector<Vec2>& blocks)
@@ -216,7 +251,7 @@ void GameScene::dropBlocks()
     }
 }
 
-void GameScene::menuStartCallback(Ref* pSender)
+void GameScene::restartCallback(Ref* pSender)
 {
     startGame();
 }
